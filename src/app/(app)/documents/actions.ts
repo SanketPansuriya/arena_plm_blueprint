@@ -15,7 +15,8 @@ type UserProfileRow = {
   organization_id: string | null;
 };
 
-const documentPageRoles = ["admin", "engineer", "approver", "supplier"] as const;
+const documentManageRoles = ["admin", "engineer", "approver"] as const;
+const documentUploadRoles = ["admin", "engineer", "approver", "supplier"] as const;
 
 function sanitizeFileName(name: string) {
   return name.replaceAll(/[^\w.-]/g, "_");
@@ -63,7 +64,7 @@ export async function uploadDocumentRevision(
     };
   }
 
-  if (!hasRoleAccess(access.user.role, documentPageRoles)) {
+  if (!hasRoleAccess(access.user.role, documentUploadRoles)) {
     return {
       status: "error",
       message: "Your role does not have access to upload revisions.",
@@ -187,7 +188,7 @@ async function getActorContext() {
     throw new Error("Unauthorized");
   }
 
-  if (!hasRoleAccess(access.user.role, documentPageRoles)) {
+  if (!hasRoleAccess(access.user.role, documentManageRoles)) {
     throw new Error("Forbidden");
   }
 

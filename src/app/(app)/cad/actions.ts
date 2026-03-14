@@ -15,7 +15,8 @@ type UserProfileRow = {
   organization_id: string | null;
 };
 
-const cadPageRoles = ["admin", "engineer", "supplier"] as const;
+const cadManageRoles = ["admin", "engineer"] as const;
+const cadUploadRoles = ["admin", "engineer", "supplier"] as const;
 
 function sanitizeFileName(name: string) {
   return name.replaceAll(/[^\w.-]/g, "_");
@@ -63,7 +64,7 @@ export async function uploadCadRevision(
     };
   }
 
-  if (!hasRoleAccess(access.user.role, cadPageRoles)) {
+  if (!hasRoleAccess(access.user.role, cadUploadRoles)) {
     return {
       status: "error",
       message: "Your role does not have access to upload CAD revisions.",
@@ -205,7 +206,7 @@ async function getActorContext() {
     throw new Error("Unauthorized");
   }
 
-  if (!hasRoleAccess(access.user.role, cadPageRoles)) {
+  if (!hasRoleAccess(access.user.role, cadManageRoles)) {
     throw new Error("Forbidden");
   }
 

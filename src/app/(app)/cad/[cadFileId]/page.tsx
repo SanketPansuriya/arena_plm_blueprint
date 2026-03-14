@@ -34,6 +34,7 @@ type CadRevisionRecord = {
 };
 
 const cadPageRoles = ["admin", "engineer", "supplier"] as const;
+const cadManageRoles = ["admin", "engineer"] as const;
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -93,6 +94,7 @@ export default async function CadFileDetailPage({
   if (!hasRoleAccess(access.user.role, cadPageRoles)) {
     redirect("/unauthorized");
   }
+  const canManageCadFile = hasRoleAccess(access.user.role, cadManageRoles);
 
   const { cadFileId } = await params;
   const supabase = await createClient();
@@ -326,50 +328,58 @@ export default async function CadFileDetailPage({
           </p>
 
           <div className="mt-5 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-            <form action={updateCadFile} className="mb-4 space-y-3">
-              <input name="cadFileId" type="hidden" value={cadFile.id} />
-              <input
-                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
-                defaultValue={cadFile.title}
-                name="title"
-                required
-                type="text"
-              />
-              <input
-                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
-                defaultValue={cadFile.cad_type ?? ""}
-                name="cadType"
-                placeholder="CAD type"
-                type="text"
-              />
-              <select
-                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
-                defaultValue={cadFile.status}
-                name="status"
-              >
-                <option value="draft">Draft</option>
-                <option value="review">Review</option>
-                <option value="released">Released</option>
-              </select>
-              <button
-                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
-                type="submit"
-              >
-                Save metadata
-              </button>
-            </form>
+            {canManageCadFile ? (
+              <form action={updateCadFile} className="mb-4 space-y-3">
+                <input name="cadFileId" type="hidden" value={cadFile.id} />
+                <input
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue={cadFile.title}
+                  name="title"
+                  required
+                  type="text"
+                />
+                <input
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue={cadFile.cad_type ?? ""}
+                  name="cadType"
+                  placeholder="CAD type"
+                  type="text"
+                />
+                <select
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue={cadFile.status}
+                  name="status"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="review">Review</option>
+                  <option value="released">Released</option>
+                </select>
+                <button
+                  className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                  type="submit"
+                >
+                  Save metadata
+                </button>
+              </form>
+            ) : (
+              <p className="mb-4 text-sm text-slate-600">
+                Metadata updates are limited to internal roles.
+              </p>
+            )}
 
             <CadRevisionUploadForm cadFileId={cadFile.id} />
 
-            <form action={deleteCadFile} className="mt-4">
-              <input name="cadFileId" type="hidden" value={cadFile.id} />
-              <button
-                className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
-                type="submit"
-              >
-                Delete CAD file
-              </button>
-            </form>
+            {canManageCadFile ? (
+              <form action={deleteCadFile} className="mt-4">
+                <input name="cadFileId" type="hidden" value={cadFile.id} />
+                <button
+                  className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
+                  type="submit"
+                >
+                  Delete CAD file
+                </button>
+              </form>
+            ) : null}
           </div>
         </aside>
       </section>

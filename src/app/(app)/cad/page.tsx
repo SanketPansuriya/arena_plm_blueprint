@@ -38,6 +38,7 @@ type OwnerPartRow = {
 };
 
 const cadPageRoles = ["admin", "engineer", "supplier"] as const;
+const cadManageRoles = ["admin", "engineer"] as const;
 const cadTypeOptions = [
   "3d-model",
   "2d-drawing",
@@ -99,6 +100,7 @@ export default async function CadFilesPage() {
   if (!hasRoleAccess(access.user.role, cadPageRoles)) {
     redirect("/unauthorized");
   }
+  const canManageCadFiles = hasRoleAccess(access.user.role, cadManageRoles);
 
   const supabase = await createClient();
   const [{ data, error }, { data: productsData, error: productsError }, { data: partsData, error: partsError }] =
@@ -208,7 +210,8 @@ export default async function CadFilesPage() {
         </div>
 
         <div className="mt-5">
-          <form action={createCadFile} className="mb-5 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+          {canManageCadFiles ? (
+            <form action={createCadFile} className="mb-5 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
             <input
               className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
               name="cadNumber"
@@ -284,7 +287,13 @@ export default async function CadFilesPage() {
                 Create CAD file
               </button>
             </div>
-          </form>
+            </form>
+          ) : (
+            <p className="mb-5 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+              Your role has read/upload access only. CAD record creation is limited to internal
+              roles.
+            </p>
+          )}
 
           <DataTable
             columns={[

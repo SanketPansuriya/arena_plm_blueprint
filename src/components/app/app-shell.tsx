@@ -44,6 +44,7 @@ const navGroups: NavGroup[] = [
     title: "Execution",
     items: [
       { label: "Changes", href: "/changes/new", allowedRoles: ["admin", "engineer", "approver"] },
+      { label: "Approvals", href: "/changes", allowedRoles: ["admin", "approver"] },
       { label: "Quality", upcoming: true, allowedRoles: ["admin", "engineer", "approver"] },
       { label: "Compliance", upcoming: true, allowedRoles: ["admin", "engineer", "approver"] },
       { label: "Suppliers", upcoming: true, allowedRoles: ["admin", "engineer", "supplier"] },

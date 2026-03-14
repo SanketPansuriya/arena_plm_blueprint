@@ -37,6 +37,7 @@ type OwnerPartRow = {
 };
 
 const documentPageRoles = ["admin", "engineer", "approver", "supplier"] as const;
+const documentManageRoles = ["admin", "engineer", "approver"] as const;
 const lifecycleFilterOptions = ["all", "draft", "review", "released"] as const;
 const documentTypeOptions = [
   "drawing",
@@ -105,6 +106,7 @@ export default async function DocumentsPage({
   if (!hasRoleAccess(access.user.role, documentPageRoles)) {
     redirect("/unauthorized");
   }
+  const canManageDocuments = hasRoleAccess(access.user.role, documentManageRoles);
 
   const resolvedSearchParams = await searchParams;
   const queryValueRaw = resolvedSearchParams.q;
@@ -277,7 +279,8 @@ export default async function DocumentsPage({
           Showing {formatCount(documents.length)} matching documents
         </p>
 
-        <form action={createDocument} className="mt-4 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+        {canManageDocuments ? (
+          <form action={createDocument} className="mt-4 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
           <input
             className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
             name="documentNumber"
@@ -356,7 +359,12 @@ export default async function DocumentsPage({
               Create document
             </button>
           </div>
-        </form>
+          </form>
+        ) : (
+          <p className="mt-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            Your role has read/upload access only. Document creation is limited to internal roles.
+          </p>
+        )}
 
         <div className="mt-5">
           <DataTable

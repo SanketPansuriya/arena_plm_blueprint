@@ -33,6 +33,7 @@ type DocumentRevisionRecord = {
 };
 
 const documentPageRoles = ["admin", "engineer", "approver", "supplier"] as const;
+const documentManageRoles = ["admin", "engineer", "approver"] as const;
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -92,6 +93,7 @@ export default async function DocumentDetailPage({
   if (!hasRoleAccess(access.user.role, documentPageRoles)) {
     redirect("/unauthorized");
   }
+  const canManageDocument = hasRoleAccess(access.user.role, documentManageRoles);
 
   const { documentId } = await params;
   const supabase = await createClient();
@@ -305,50 +307,58 @@ export default async function DocumentDetailPage({
           </p>
 
           <div className="mt-5 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-            <form action={updateDocument} className="mb-4 space-y-3">
-              <input name="documentId" type="hidden" value={document.id} />
-              <input
-                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
-                defaultValue={document.title}
-                name="title"
-                required
-                type="text"
-              />
-              <input
-                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
-                defaultValue={document.document_type}
-                name="documentType"
-                required
-                type="text"
-              />
-              <select
-                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
-                defaultValue={document.status}
-                name="status"
-              >
-                <option value="draft">Draft</option>
-                <option value="review">Review</option>
-                <option value="released">Released</option>
-              </select>
-              <button
-                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
-                type="submit"
-              >
-                Save metadata
-              </button>
-            </form>
+            {canManageDocument ? (
+              <form action={updateDocument} className="mb-4 space-y-3">
+                <input name="documentId" type="hidden" value={document.id} />
+                <input
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue={document.title}
+                  name="title"
+                  required
+                  type="text"
+                />
+                <input
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue={document.document_type}
+                  name="documentType"
+                  required
+                  type="text"
+                />
+                <select
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue={document.status}
+                  name="status"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="review">Review</option>
+                  <option value="released">Released</option>
+                </select>
+                <button
+                  className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                  type="submit"
+                >
+                  Save metadata
+                </button>
+              </form>
+            ) : (
+              <p className="mb-4 text-sm text-slate-600">
+                Metadata updates are limited to internal roles.
+              </p>
+            )}
 
             <DocumentRevisionUploadForm documentId={document.id} />
 
-            <form action={deleteDocument} className="mt-4">
-              <input name="documentId" type="hidden" value={document.id} />
-              <button
-                className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
-                type="submit"
-              >
-                Delete document
-              </button>
-            </form>
+            {canManageDocument ? (
+              <form action={deleteDocument} className="mt-4">
+                <input name="documentId" type="hidden" value={document.id} />
+                <button
+                  className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
+                  type="submit"
+                >
+                  Delete document
+                </button>
+              </form>
+            ) : null}
           </div>
         </aside>
       </section>
