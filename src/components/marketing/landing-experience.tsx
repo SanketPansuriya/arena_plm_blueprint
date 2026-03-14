@@ -1,95 +1,147 @@
+import Link from "next/link";
+
+import { SignOutForm } from "@/components/auth/sign-out-form";
+
 const features = [
   {
-    title: "Product records",
-    description: "Manage products, parts, BOMs, and revisions from one place.",
+    title: "Single source of truth",
+    description: "Products, parts, and BOM revisions live in one reliable place.",
   },
   {
-    title: "Change control",
-    description: "Track approvals, release decisions, and audit history.",
+    title: "Clear release decisions",
+    description: "Approvals and change records stay readable from draft to release.",
   },
   {
-    title: "Supplier collaboration",
-    description: "Share approved drawings and documents with external teams.",
+    title: "Controlled collaboration",
+    description: "Share approved files with suppliers without losing governance.",
   },
 ];
 
-export function LandingExperience() {
+export function LandingExperience({
+  isAuthenticated,
+}: Readonly<{
+  isAuthenticated: boolean;
+}>) {
   return (
-    <main className="min-h-screen bg-[#f7f4ec] text-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-8 sm:px-10 lg:px-12">
-        <header className="flex flex-col gap-5 border-b border-slate-900/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-teal-800">
-              NextGen PLM
-            </p>
-            <p className="mt-2 text-sm text-slate-600">
-              Cloud-native product lifecycle management
-            </p>
+    <main className="min-h-screen text-slate-900">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 sm:px-8 lg:px-10">
+        <header className="flex flex-wrap items-center justify-between gap-4 rounded-[1.6rem] border border-line/90 bg-surface/85 px-5 py-4 shadow-[0_24px_60px_-52px_rgba(15,23,42,0.65)] backdrop-blur sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="h-2.5 w-2.5 rounded-full bg-accent" />
+            <p className="text-sm font-semibold tracking-wide text-slate-800">NextGen PLM</p>
           </div>
-
-          <div className="flex flex-wrap gap-3">
-            <a
-              className="rounded-full border border-slate-900/10 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-              href="/sign-in"
-            >
-              Sign in
-            </a>
-            <a
-              className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-              href="/sign-up"
-            >
-              Sign up
-            </a>
-          </div>
+          {isAuthenticated ? (
+            <div className="flex flex-wrap gap-2">
+              <Link
+                className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+              <SignOutForm className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong" />
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <a
+                className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+                href="/sign-in"
+              >
+                Sign in
+              </a>
+              <a
+                className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
+                href="/sign-up"
+              >
+                Sign up
+              </a>
+            </div>
+          )}
         </header>
 
-        <section className="grid flex-1 gap-10 py-14 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="inline-flex rounded-full border border-teal-900/10 bg-teal-700/10 px-4 py-2 text-sm font-medium text-teal-900">
-              Built for engineering, quality, and operations teams
+        <section className="grid gap-6 py-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:py-12">
+          <section className="fade-up rounded-[2rem] border border-line/90 bg-surface p-7 shadow-[0_28px_85px_-62px_rgba(15,23,42,0.5)] sm:p-10">
+            <p className="inline-flex rounded-full border border-line bg-surface-muted px-3 py-1.5 text-xs font-medium tracking-wide text-slate-700">
+              Built for engineering and operations
             </p>
-            <h1 className="mt-6 font-[family-name:var(--font-display)] text-5xl font-semibold leading-[0.96] tracking-[-0.05em] sm:text-6xl">
-              Keep product data, revisions, and approvals in sync.
+            <h1 className="mt-6 max-w-3xl font-[family-name:var(--font-display)] text-5xl leading-[0.94] tracking-[-0.04em] text-slate-950 sm:text-6xl">
+              Product change, kept simple.
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-700">
+            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
               NextGen PLM helps teams manage products, BOMs, documents, CAD
-              references, and change workflows in one connected system.
+              references, and change workflows in one connected system designed for
+              focused decision-making.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-2.5">
               <a
-                className="rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-strong"
                 href="/sign-up"
               >
                 Get started
               </a>
               <a
-                className="rounded-full border border-slate-900/10 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                className="rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-white"
                 href="/sign-in"
               >
                 Sign in
               </a>
             </div>
-          </div>
 
-          <div className="rounded-[2rem] border border-slate-900/10 bg-white p-6 shadow-[0_30px_70px_-45px_rgba(15,23,42,0.35)]">
-            <p className="text-sm font-medium text-slate-500">Platform overview</p>
-            <div className="mt-6 space-y-4">
+            <div className="mt-10 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[1.2rem] border border-line bg-surface-muted p-4">
+                <p className="text-xs font-medium text-slate-600">Controlled records</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">Products and BOMs</p>
+              </div>
+              <div className="rounded-[1.2rem] border border-line bg-surface-muted p-4">
+                <p className="text-xs font-medium text-slate-600">Traceable flow</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">Revisions and approvals</p>
+              </div>
+              <div className="rounded-[1.2rem] border border-line bg-surface-muted p-4">
+                <p className="text-xs font-medium text-slate-600">Supplier ready</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">Documents and CAD</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="fade-up fade-up-delay-1 rounded-[2rem] border border-line/90 bg-surface/90 p-6 shadow-[0_22px_70px_-52px_rgba(15,23,42,0.5)] sm:p-7">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-slate-600">Platform overview</p>
+                <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl tracking-[-0.03em] text-slate-900">
+                  One calm release room
+                </h2>
+              </div>
+              <div className="rounded-full border border-line bg-surface-muted px-3 py-1 text-xs font-semibold tracking-wide text-amber-800">
+                MVP
+              </div>
+            </div>
+
+            <div className="mt-7 space-y-3">
               {features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-[1.25rem] border border-slate-900/8 bg-[#faf8f2] p-4"
+                  className="rounded-[1.1rem] border border-line bg-surface p-4"
                 >
-                  <h2 className="text-lg font-semibold tracking-[-0.03em]">
+                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-900">
                     {feature.title}
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
                     {feature.description}
                   </p>
                 </div>
               ))}
             </div>
-          </div>
+
+            <div className="mt-7 rounded-[1.1rem] border border-line bg-surface-muted p-4">
+              <p className="text-xs font-semibold tracking-wide text-slate-600">
+                Why it feels better
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                Fewer visual weights, clear spacing, and deliberate typography make every
+                screen easier to read during release work.
+              </p>
+            </div>
+          </section>
         </section>
       </div>
     </main>

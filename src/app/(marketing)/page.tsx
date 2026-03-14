@@ -1,5 +1,11 @@
 import { LandingExperience } from "@/components/marketing/landing-experience";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
-  return <LandingExperience />;
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return <LandingExperience isAuthenticated={Boolean(user)} />;
 }
