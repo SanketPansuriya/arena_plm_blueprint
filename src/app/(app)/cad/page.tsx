@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { createCadFile } from "@/app/(app)/cad/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
@@ -24,7 +25,26 @@ type CadRow = {
   current_revision: CadRevision | CadRevision[] | null;
 };
 
+type OwnerProductRow = {
+  id: string;
+  product_code: string;
+  name: string;
+};
+
+type OwnerPartRow = {
+  id: string;
+  part_number: string;
+  name: string;
+};
+
 const cadPageRoles = ["admin", "engineer", "supplier"] as const;
+const cadTypeOptions = [
+  "3d-model",
+  "2d-drawing",
+  "assembly",
+  "schematic",
+  "layout",
+] as const;
 
 function normalizeRevision(revision: CadRow["current_revision"]) {
   if (Array.isArray(revision)) {
@@ -81,30 +101,37 @@ export default async function CadFilesPage() {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("cad_files")
-    .select(
-      `
-        id,
-        cad_number,
-        title,
-        cad_type,
-        owner_entity_type,
-        status,
-        current_revision:cad_file_revisions!cad_files_current_revision_id_fkey (
-          revision_code,
-          status,
-          viewer_url,
-          created_at
+  const [{ data, error }, { data: productsData, error: productsError }, { data: partsData, error: partsError }] =
+    await Promise.all([
+      supabase
+        .from("cad_files")
+        .select(
+          `
+            id,
+            cad_number,
+            title,
+            cad_type,
+            owner_entity_type,
+            status,
+            current_revision:cad_file_revisions!cad_files_current_revision_id_fkey (
+              revision_code,
+              status,
+              viewer_url,
+              created_at
+            )
+          `,
         )
-      `,
-    )
-    .order("updated_at", { ascending: false });
+        .order("updated_at", { ascending: false }),
+      supabase.from("products").select("id,product_code,name").order("product_code"),
+      supabase.from("parts").select("id,part_number,name").order("part_number"),
+    ]);
 
   const cadFiles = ((data ?? []) as CadRow[]).map((cadFile) => ({
     ...cadFile,
     currentRevision: normalizeRevision(cadFile.current_revision),
   }));
+  const ownerProducts = (productsData ?? []) as OwnerProductRow[];
+  const ownerParts = (partsData ?? []) as OwnerPartRow[];
 
   const totalCadFiles = cadFiles.length;
   const viewerLinked = cadFiles.filter((cadFile) => Boolean(cadFile.currentRevision?.viewer_url))
@@ -181,6 +208,84 @@ export default async function CadFilesPage() {
         </div>
 
         <div className="mt-5">
+          <form action={createCadFile} className="mb-5 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="cadNumber"
+              placeholder="CAD number (required)"
+              required
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="title"
+              placeholder="Title (required)"
+              required
+              type="text"
+            />
+            <select
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              defaultValue=""
+              name="cadType"
+            >
+              <option value="">Select CAD type</option>
+              {cadTypeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.replaceAll("-", " ")}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              defaultValue=""
+              name="ownerEntityType"
+              required
+            >
+              <option disabled value="">
+                Select owner type
+              </option>
+              <option value="product">Product</option>
+              <option value="part">Part</option>
+            </select>
+            <select
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 md:col-span-2"
+              defaultValue=""
+              name="ownerEntityId"
+              required
+            >
+              <option disabled value="">
+                Select owner entity
+              </option>
+              <optgroup label="Products">
+                {ownerProducts.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.product_code} - {product.name}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Parts">
+                {ownerParts.map((part) => (
+                  <option key={part.id} value={part.id}>
+                    {part.part_number} - {part.name}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+            {productsError || partsError ? (
+              <p className="md:col-span-2 text-sm text-amber-700">
+                Owner options could not be fully loaded. Try refreshing the page.
+              </p>
+            ) : null}
+            <div className="md:col-span-2">
+              <button
+                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                type="submit"
+              >
+                Create CAD file
+              </button>
+            </div>
+          </form>
+
           <DataTable
             columns={[
               {

@@ -49,6 +49,7 @@ Status legend:
 - [x] Build CAD file upload and file reference screens.
 - [x] Add API routes for product, part, BOM, document, and CAD CRUD.
 - [x] Add search and filtering for products, parts, BOMs, and documents.
+- [x] Add page-level CRUD forms for products, parts, BOMs, documents, and CAD files.
 
 ## Lifecycle Tracking
 - [x] Create database tables for workflows and workflow steps.
@@ -56,7 +57,7 @@ Status legend:
 - [x] Create database tables for approvals and audit logs.
 - [x] Create database tables for quality records and test results.
 - [x] Create database tables for certifications and compliance records.
-- [ ] Build a change request creation flow from product and part pages.
+- [x] Build a change request creation flow from product and part pages.
 - [ ] Build an approval queue page.
 - [ ] Build a change detail page with impacted records and decisions.
 - [ ] Implement revision release logic after approval.

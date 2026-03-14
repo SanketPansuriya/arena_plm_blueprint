@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { createPart } from "@/app/(app)/parts/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
@@ -246,6 +247,49 @@ export default async function PartsPage({
           <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
             Showing {formatCount(parts.length)} matching parts
           </p>
+
+          <form action={createPart} className="mt-4 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="partNumber"
+              placeholder="Part number (required)"
+              required
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="name"
+              placeholder="Part name (required)"
+              required
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="partType"
+              placeholder="Part type"
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="unitOfMeasure"
+              placeholder="UOM"
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 md:col-span-2"
+              name="description"
+              placeholder="Description"
+              type="text"
+            />
+            <div className="md:col-span-2">
+              <button
+                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                type="submit"
+              >
+                Create part
+              </button>
+            </div>
+          </form>
 
           <div className="mt-5">
             <DataTable

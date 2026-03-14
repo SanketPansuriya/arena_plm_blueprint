@@ -46,6 +46,7 @@
 - Build CAD file upload and file reference screens.
 - Add API routes for product, part, BOM, document, and CAD CRUD.
 - Add search and filtering for products, parts, BOMs, and documents.
+- Add page-level CRUD forms for products, parts, BOMs, documents, and CAD files.
 
 ## Lifecycle Tracking
 
@@ -54,6 +55,7 @@
 - Create database tables for approvals and audit logs.
 - Create database tables for quality records and test results.
 - Create database tables for certifications and compliance records.
+- Build a change request creation flow from product and part pages.
 
 ## Dashboard
 

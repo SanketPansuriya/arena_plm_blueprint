@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { createDocument } from "@/app/(app)/documents/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
@@ -23,8 +24,29 @@ type DocumentRow = {
   current_revision: DocumentRevision | DocumentRevision[] | null;
 };
 
+type OwnerProductRow = {
+  id: string;
+  product_code: string;
+  name: string;
+};
+
+type OwnerPartRow = {
+  id: string;
+  part_number: string;
+  name: string;
+};
+
 const documentPageRoles = ["admin", "engineer", "approver", "supplier"] as const;
 const lifecycleFilterOptions = ["all", "draft", "review", "released"] as const;
+const documentTypeOptions = [
+  "drawing",
+  "specification",
+  "procedure",
+  "work_instruction",
+  "manual",
+  "certificate",
+  "report",
+] as const;
 
 function normalizeRevision(revision: DocumentRow["current_revision"]) {
   if (Array.isArray(revision)) {
@@ -96,21 +118,24 @@ export default async function DocumentsPage({
       : "all";
 
   const supabase = await createClient();
-  let documentQuery = supabase.from("documents").select(
-    `
-      id,
-      document_number,
-      title,
-      document_type,
-      owner_entity_type,
-      status,
-      current_revision:document_revisions!documents_current_revision_id_fkey (
-        revision_code,
+  let documentQuery = supabase
+    .from("documents")
+    .select(
+      `
+        id,
+        document_number,
+        title,
+        document_type,
+        owner_entity_type,
         status,
-        created_at
-      )
-    `,
-  );
+        current_revision:document_revisions!documents_current_revision_id_fkey (
+          revision_code,
+          status,
+          created_at
+        )
+      `,
+    )
+    .order("updated_at", { ascending: false });
 
   if (queryValue) {
     const escapedQuery = queryValue.replaceAll(",", "\\,");
@@ -123,12 +148,22 @@ export default async function DocumentsPage({
     documentQuery = documentQuery.eq("status", selectedStatus);
   }
 
-  const { data, error } = await documentQuery.order("updated_at", { ascending: false });
+  const [
+    { data, error },
+    { data: productsData, error: productsError },
+    { data: partsData, error: partsError },
+  ] = await Promise.all([
+    documentQuery,
+    supabase.from("products").select("id,product_code,name").order("product_code"),
+    supabase.from("parts").select("id,part_number,name").order("part_number"),
+  ]);
 
   const documents = ((data ?? []) as DocumentRow[]).map((document) => ({
     ...document,
     currentRevision: normalizeRevision(document.current_revision),
   }));
+  const ownerProducts = (productsData ?? []) as OwnerProductRow[];
+  const ownerParts = (partsData ?? []) as OwnerPartRow[];
 
   const totalDocuments = documents.length;
   const releasedDocuments = documents.filter(
@@ -241,6 +276,87 @@ export default async function DocumentsPage({
         <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
           Showing {formatCount(documents.length)} matching documents
         </p>
+
+        <form action={createDocument} className="mt-4 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+          <input
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+            name="documentNumber"
+            placeholder="Document number (required)"
+            required
+            type="text"
+          />
+          <input
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+            name="title"
+            placeholder="Title (required)"
+            required
+            type="text"
+          />
+          <select
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+            defaultValue=""
+            name="documentType"
+            required
+          >
+            <option disabled value="">
+              Select type
+            </option>
+            {documentTypeOptions.map((option) => (
+              <option key={option} value={option}>
+                {option.replaceAll("_", " ")}
+              </option>
+            ))}
+          </select>
+          <select
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+            defaultValue=""
+            name="ownerEntityType"
+            required
+          >
+            <option disabled value="">
+              Select owner type
+            </option>
+            <option value="product">Product</option>
+            <option value="part">Part</option>
+          </select>
+          <select
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 md:col-span-2"
+            defaultValue=""
+            name="ownerEntityId"
+            required
+          >
+            <option disabled value="">
+              Select owner entity
+            </option>
+            <optgroup label="Products">
+              {ownerProducts.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.product_code} - {product.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Parts">
+              {ownerParts.map((part) => (
+                <option key={part.id} value={part.id}>
+                  {part.part_number} - {part.name}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          {productsError || partsError ? (
+            <p className="md:col-span-2 text-sm text-amber-700">
+              Owner options could not be fully loaded. Try refreshing the page.
+            </p>
+          ) : null}
+          <div className="md:col-span-2">
+            <button
+              className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+              type="submit"
+            >
+              Create document
+            </button>
+          </div>
+        </form>
 
         <div className="mt-5">
           <DataTable

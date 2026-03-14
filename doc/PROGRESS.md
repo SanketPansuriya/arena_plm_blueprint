@@ -12,3 +12,5 @@
 [2026-03-14 16:51] codex — Added Supabase migration for `approvals` and `audit_logs` with constraints, indexes, triggers, and RLS policies.
 [2026-03-14 16:55] codex — Added Supabase migration for `quality_records` and `test_results` with constraints, indexes, triggers, and RLS policies.
 [2026-03-14 16:57] codex — Added Supabase migration for `certifications` and `compliance_records` with constraints, indexes, triggers, and RLS policies.
+[2026-03-14 17:01] codex — Added `/changes/new` creation flow with server action and product/part detail entry points.
+[2026-03-14 17:08] codex — Added page-level CRUD forms/actions for products, parts, BOMs, documents, and CAD files.

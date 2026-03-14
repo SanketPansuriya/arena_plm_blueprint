@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { createPartRevision, deletePart, updatePart } from "@/app/(app)/parts/actions";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
 import { hasRoleAccess } from "@/lib/auth/roles";
@@ -392,6 +393,49 @@ export default async function PartDetailPage({
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           <div className="rounded-[1.9rem] border border-slate-900/10 bg-white/88 p-6 shadow-[0_24px_70px_-55px_rgba(15,23,42,0.45)] backdrop-blur">
+            <div className="mb-6 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-500">Create revision</p>
+              <form action={createPartRevision} className="mt-4 space-y-3">
+                <input name="partId" type="hidden" value={part.id} />
+                <input
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  name="revisionCode"
+                  placeholder="Revision code (A, B, R1...)"
+                  required
+                  type="text"
+                />
+                <select
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  defaultValue="draft"
+                  name="status"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="review">Review</option>
+                  <option value="released">Released</option>
+                </select>
+                <textarea
+                  className="block min-h-24 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                  name="summary"
+                  placeholder="Revision summary"
+                />
+                <label className="flex items-center gap-2 text-sm text-slate-600">
+                  <input
+                    className="h-4 w-4 rounded border-slate-300 text-slate-900"
+                    defaultChecked={part.current_revision_id === null}
+                    name="setAsCurrent"
+                    type="checkbox"
+                  />
+                  Set as current revision
+                </label>
+                <button
+                  className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                  type="submit"
+                >
+                  Create revision
+                </button>
+              </form>
+            </div>
+
             <div className="border-b border-slate-900/8 pb-5">
               <p className="text-sm font-medium text-slate-500">Revision history</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -538,12 +582,77 @@ export default async function PartDetailPage({
             </div>
           </div>
 
+          <div className="rounded-[1.9rem] border border-slate-900/10 bg-white/88 p-6 shadow-[0_24px_70px_-55px_rgba(15,23,42,0.45)] backdrop-blur">
+            <p className="text-sm font-medium text-slate-500">Manage part</p>
+            <form action={updatePart} className="mt-4 space-y-3">
+              <input name="partId" type="hidden" value={part.id} />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={part.name}
+                name="name"
+                required
+                type="text"
+              />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={part.part_type ?? ""}
+                name="partType"
+                placeholder="Part type"
+                type="text"
+              />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={part.unit_of_measure ?? ""}
+                name="unitOfMeasure"
+                placeholder="UOM"
+                type="text"
+              />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={part.description ?? ""}
+                name="description"
+                placeholder="Description"
+                type="text"
+              />
+              <select
+                className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={part.lifecycle_status}
+                name="lifecycleStatus"
+              >
+                <option value="draft">Draft</option>
+                <option value="review">Review</option>
+                <option value="released">Released</option>
+              </select>
+              <button
+                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                type="submit"
+              >
+                Save part
+              </button>
+            </form>
+            <form action={deletePart} className="mt-3">
+              <input name="partId" type="hidden" value={part.id} />
+              <button
+                className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
+                type="submit"
+              >
+                Delete part
+              </button>
+            </form>
+          </div>
+
           <div className="rounded-[1.9rem] border border-slate-900/10 bg-[#f8f6f1] p-6 shadow-[0_24px_70px_-55px_rgba(15,23,42,0.25)]">
             <p className="text-sm font-medium text-slate-500">Record scope</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               This record includes lifecycle status, revision timeline, and where the
               current revision is used.
             </p>
+            <Link
+              className="mt-5 inline-flex rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              href={`/changes/new?entityType=part&entityId=${part.id}`}
+            >
+              Create change request
+            </Link>
           </div>
         </div>
       </section>

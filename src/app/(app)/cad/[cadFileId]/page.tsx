@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { deleteCadFile, updateCadFile } from "@/app/(app)/cad/actions";
 import { CadRevisionUploadForm } from "@/components/app/cad-revision-upload-form";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
@@ -325,7 +326,50 @@ export default async function CadFileDetailPage({
           </p>
 
           <div className="mt-5 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+            <form action={updateCadFile} className="mb-4 space-y-3">
+              <input name="cadFileId" type="hidden" value={cadFile.id} />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={cadFile.title}
+                name="title"
+                required
+                type="text"
+              />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={cadFile.cad_type ?? ""}
+                name="cadType"
+                placeholder="CAD type"
+                type="text"
+              />
+              <select
+                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={cadFile.status}
+                name="status"
+              >
+                <option value="draft">Draft</option>
+                <option value="review">Review</option>
+                <option value="released">Released</option>
+              </select>
+              <button
+                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                type="submit"
+              >
+                Save metadata
+              </button>
+            </form>
+
             <CadRevisionUploadForm cadFileId={cadFile.id} />
+
+            <form action={deleteCadFile} className="mt-4">
+              <input name="cadFileId" type="hidden" value={cadFile.id} />
+              <button
+                className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
+                type="submit"
+              >
+                Delete CAD file
+              </button>
+            </form>
           </div>
         </aside>
       </section>

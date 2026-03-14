@@ -3,7 +3,12 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
-import { uploadDocumentRevision, type UploadRevisionState } from "@/app/(app)/documents/actions";
+import { uploadDocumentRevision } from "@/app/(app)/documents/actions";
+
+type UploadRevisionState = {
+  status: "idle" | "success" | "error";
+  message: string | null;
+};
 
 const initialState: UploadRevisionState = {
   status: "idle",

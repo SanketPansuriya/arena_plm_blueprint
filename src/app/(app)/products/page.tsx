@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { createProduct } from "@/app/(app)/products/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
@@ -290,6 +291,43 @@ export default async function ProductsPage({
           <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
             Showing {formatCount(products.length)} matching products
           </p>
+
+          <form action={createProduct} className="mt-4 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="productCode"
+              placeholder="Product code (required)"
+              required
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="name"
+              placeholder="Product name (required)"
+              required
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="category"
+              placeholder="Category"
+              type="text"
+            />
+            <input
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+              name="description"
+              placeholder="Description"
+              type="text"
+            />
+            <div className="md:col-span-2">
+              <button
+                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                type="submit"
+              >
+                Create product
+              </button>
+            </div>
+          </form>
 
           <div className="mt-5">
             <DataTable

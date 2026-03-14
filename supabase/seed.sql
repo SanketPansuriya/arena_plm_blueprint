@@ -108,6 +108,47 @@ begin
     where id = demo_product_id;
   end if;
 
+  if to_regclass('public.products') is not null
+    and to_regclass('public.product_revisions') is not null then
+    insert into public.product_revisions (
+      id,
+      organization_id,
+      product_id,
+      revision_code,
+      status,
+      summary,
+      released_at,
+      released_by
+    )
+    select
+      gen_random_uuid(),
+      p.organization_id,
+      p.id,
+      'A',
+      'draft',
+      'Auto-seeded baseline revision.',
+      null,
+      null
+    from public.products p
+    where not exists (
+      select 1
+      from public.product_revisions pr
+      where pr.product_id = p.id
+    );
+
+    update public.products p
+    set current_revision_id = latest.id
+    from (
+      select distinct on (pr.product_id)
+        pr.product_id,
+        pr.id
+      from public.product_revisions pr
+      order by pr.product_id, pr.created_at desc, pr.id desc
+    ) as latest
+    where p.id = latest.product_id
+      and p.current_revision_id is null;
+  end if;
+
   if to_regclass('public.parts') is not null then
     insert into public.parts (
       id,

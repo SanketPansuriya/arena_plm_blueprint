@@ -11,7 +11,6 @@
 
 ## Lifecycle Tracking
 
-- Build a change request creation flow from product and part pages.
 - Build an approval queue page.
 - Build a change detail page with impacted records and decisions.
 - Implement revision release logic after approval.

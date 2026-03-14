@@ -15,6 +15,9 @@
 - Added migration `20260314201500_create_approvals_and_audit_logs.sql` for approval queues and audit trail schema with RLS coverage.
 - Added migration `20260314202500_create_quality_records_and_test_results.sql` for quality and testing lifecycle schema with RLS coverage.
 - Added migration `20260314203500_create_certifications_and_compliance_records.sql` for certification and compliance tracking schema with RLS coverage.
+- Added `/changes/new` creation workflow with server action creating `change_requests` and initial `change_items`.
+- Added change-request entry CTAs on product and part detail pages and enabled the Changes nav link.
+- Added server actions and page forms to create/update/delete products, parts, BOMs, documents, and CAD files directly from module pages.
 - Enabled sidebar links for BOM and Documents modules.
 - Enabled sidebar link for CAD files module.
 - Added project-level agent operations guide in `AGENTS.md`.

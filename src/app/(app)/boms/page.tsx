@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { createBom, deleteBom, updateBom } from "@/app/(app)/boms/actions";
 import {
   NestedBomEditor,
   type BomEditorItem,
@@ -98,6 +99,7 @@ export default async function BomsPage({
   const [
     { data: bomData, error: bomsError },
     { data: partRevisionData, error: partRevisionsError },
+    { data: productRevisionData, error: productRevisionsError },
   ] = await Promise.all([
     (() => {
       let bomQuery = supabase
@@ -118,36 +120,28 @@ export default async function BomsPage({
     supabase.from("part_revisions").select("id,part_id,revision_code").order("created_at", {
       ascending: false,
     }),
+    supabase
+      .from("product_revisions")
+      .select("id,revision_code,product_id")
+      .order("created_at", { ascending: false }),
   ]);
 
   const boms = (bomData ?? []) as BomRecord[];
   const partRevisions = (partRevisionData ?? []) as PartRevisionRecord[];
+  const productRevisions = (productRevisionData ?? []) as ProductRevisionRecord[];
   const bomIds = boms.map((bom) => bom.id);
-  const productRevisionIds = Array.from(new Set(boms.map((bom) => bom.product_revision_id)));
   const partIds = Array.from(new Set(partRevisions.map((revision) => revision.part_id)));
-
-  const [
-    { data: bomItemsData, error: bomItemsError },
-    { data: productRevisionData, error: productRevisionsError },
-  ] = await Promise.all([
+  const { data: bomItemsData, error: bomItemsError } =
     bomIds.length > 0
-      ? supabase
+      ? await supabase
           .from("bom_items")
           .select(
             "id,bom_id,parent_bom_item_id,part_revision_id,line_number,quantity,unit_of_measure,reference_designator,notes",
           )
           .in("bom_id", bomIds)
-      : Promise.resolve({ data: [], error: null }),
-    productRevisionIds.length > 0
-      ? supabase
-          .from("product_revisions")
-          .select("id,revision_code,product_id")
-          .in("id", productRevisionIds)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
+      : { data: [], error: null };
 
   const bomItems = (bomItemsData ?? []) as BomItemRecord[];
-  const productRevisions = (productRevisionData ?? []) as ProductRevisionRecord[];
   const productIds = Array.from(
     new Set(productRevisions.map((productRevision) => productRevision.product_id)),
   );
@@ -296,7 +290,52 @@ export default async function BomsPage({
         </div>
       </section>
 
-      <section className="rounded-[1.5rem] border border-slate-900/8 bg-white/85 p-5">
+      <section className="rounded-[1.8rem] border border-slate-900/10 bg-white/88 p-6 shadow-[0_24px_70px_-55px_rgba(15,23,42,0.45)] backdrop-blur">
+        <div className="border-b border-slate-900/8 pb-5">
+          <p className="text-sm font-medium text-slate-500">BOM records</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+            Create and manage BOM headers
+          </h2>
+        </div>
+
+        <form action={createBom} className="mt-5 grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
+          <input
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+            name="name"
+            placeholder="BOM name (required)"
+            required
+            type="text"
+          />
+          <select
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+            name="productRevisionId"
+            required
+          >
+            <option value="">Select product revision</option>
+            {productRevisions.map((revision) => {
+              const product = productById.get(revision.product_id);
+              return (
+                <option key={revision.id} value={revision.id}>
+                  {product?.product_code ?? "Unknown"} {product?.name ? `(${product.name})` : ""} -
+                  {" "}Rev {revision.revision_code}
+                </option>
+              );
+            })}
+          </select>
+          <button
+            className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+            type="submit"
+          >
+            Create BOM
+          </button>
+        </form>
+        {productRevisions.length === 0 ? (
+          <p className="mt-3 text-sm text-amber-700">
+            No product revisions found. Create a product revision first, then return to create a
+            BOM.
+          </p>
+        ) : null}
+
         <form className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto_auto]" method="get">
           <input
             className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800"
@@ -331,6 +370,58 @@ export default async function BomsPage({
         <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
           Showing {formatCount(bomSummaries.length)} matching BOMs
         </p>
+        <div className="mt-5 space-y-3">
+          {bomSummaries.length === 0 ? (
+            <p className="text-sm text-slate-600">No BOM records yet.</p>
+          ) : (
+            bomSummaries.map((bom) => (
+              <div
+                key={bom.id}
+                className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4"
+              >
+                <form action={updateBom} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto]">
+                  <input name="bomId" type="hidden" value={bom.id} />
+                  <input
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                    defaultValue={bom.name}
+                    name="name"
+                    required
+                    type="text"
+                  />
+                  <select
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                    defaultValue={bom.status}
+                    name="status"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="review">Review</option>
+                    <option value="released">Released</option>
+                  </select>
+                  <button
+                    className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                    type="submit"
+                  >
+                    Save
+                  </button>
+                </form>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                    {bom.productCode} / Rev {bom.revisionCode}
+                  </p>
+                  <form action={deleteBom}>
+                    <input name="bomId" type="hidden" value={bom.id} />
+                    <button
+                      className="rounded-xl border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700"
+                      type="submit"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </section>
 
       {bomSummaries.length === 0 ? (

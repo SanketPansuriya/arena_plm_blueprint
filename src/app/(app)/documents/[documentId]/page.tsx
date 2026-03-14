@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { deleteDocument, updateDocument } from "@/app/(app)/documents/actions";
 import { DocumentRevisionUploadForm } from "@/components/app/document-revision-upload-form";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAuthenticatedAppContext } from "@/lib/auth/get-authenticated-app-context";
@@ -304,7 +305,50 @@ export default async function DocumentDetailPage({
           </p>
 
           <div className="mt-5 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+            <form action={updateDocument} className="mb-4 space-y-3">
+              <input name="documentId" type="hidden" value={document.id} />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={document.title}
+                name="title"
+                required
+                type="text"
+              />
+              <input
+                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={document.document_type}
+                name="documentType"
+                required
+                type="text"
+              />
+              <select
+                className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800"
+                defaultValue={document.status}
+                name="status"
+              >
+                <option value="draft">Draft</option>
+                <option value="review">Review</option>
+                <option value="released">Released</option>
+              </select>
+              <button
+                className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+                type="submit"
+              >
+                Save metadata
+              </button>
+            </form>
+
             <DocumentRevisionUploadForm documentId={document.id} />
+
+            <form action={deleteDocument} className="mt-4">
+              <input name="documentId" type="hidden" value={document.id} />
+              <button
+                className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700"
+                type="submit"
+              >
+                Delete document
+              </button>
+            </form>
           </div>
         </aside>
       </section>
